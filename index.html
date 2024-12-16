@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4D Animated Calculator</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #1d1d1d, #4c4cff);
+      color: white;
+      overflow: hidden;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .calculator {
+      display: grid;
+      grid-template-columns: repeat(4, 80px);
+      grid-gap: 15px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 20px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+    }
+    .screen {
+      grid-column: span 4;
+      height: 70px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      padding: 0 10px;
+      font-size: 2rem;
+      color: #fff;
+    }
+    .button {
+      height: 60px;
+      background: linear-gradient(135deg, #4c4cff, #1d1dff);
+      border: none;
+      border-radius: 10px;
+      font-size: 1.5rem;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .button:active {
+      transform: scale(0.95);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    }
+    .button:hover {
+      animation: glow 1s infinite alternate;
+    }
+    @keyframes glow {
+      from {
+        box-shadow: 0 0 10px #4c4cff, 0 0 20px #1d1dff;
+      }
+      to {
+        box-shadow: 0 0 20px #1d1dff, 0 0 30px #4c4cff;
+      }
+    }
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="calculator">
+      <div class="screen" id="screen">0</div>
+      <button class="button" onclick="appendNumber('7')">7</button>
+      <button class="button" onclick="appendNumber('8')">8</button>
+      <button class="button" onclick="appendNumber('9')">9</button>
+      <button class="button" onclick="setOperation('/')">÷</button>
+      <button class="button" onclick="appendNumber('4')">4</button>
+      <button class="button" onclick="appendNumber('5')">5</button>
+      <button class="button" onclick="appendNumber('6')">6</button>
+      <button class="button" onclick="setOperation('*')">×</button>
+      <button class="button" onclick="appendNumber('1')">1</button>
+      <button class="button" onclick="appendNumber('2')">2</button>
+      <button class="button" onclick="appendNumber('3')">3</button>
+      <button class="button" onclick="setOperation('-')">−</button>
+      <button class="button" onclick="appendNumber('0')">0</button>
+      <button class="button" onclick="clearScreen()">C</button>
+      <button class="button" onclick="calculate()">=</button>
+      <button class="button" onclick="setOperation('+')">+</button>
+    </div>
+  </div>
+  <canvas id="bgCanvas"></canvas>
+  <script>
+    let currentNumber = '';
+    let previousNumber = '';
+    let operation = null;
+
+    function appendNumber(number) {
+      currentNumber += number;
+      document.getElementById('screen').innerText = currentNumber;
+    }
+
+    function setOperation(op) {
+      if (currentNumber === '') return;
+      if (previousNumber !== '') calculate();
+      operation = op;
+      previousNumber = currentNumber;
+      currentNumber = '';
+    }
+
+    function calculate() {
+      let result;
+      const prev = parseFloat(previousNumber);
+      const current = parseFloat(currentNumber);
+      if (isNaN(prev) || isNaN(current)) return;
+      switch (operation) {
+        case '+':
+          result = prev + current;
+          break;
+        case '-':
+          result = prev - current;
+          break;
+        case '*':
+          result = prev * current;
+          break;
+        case '/':
+          result = prev / current;
+          break;
+        default:
+          return;
+      }
+      currentNumber = result;
+      operation = null;
+      previousNumber = '';
+      document.getElementById('screen').innerText = result;
+    }
+
+    function clearScreen() {
+      currentNumber = '';
+      previousNumber = '';
+      operation = null;
+      document.getElementById('screen').innerText = '0';
+    }
+
+    // Background animation
+    const canvas = document.getElementById('bgCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const time = Date.now() / 1000;
+      for (let i = 0; i < 200; i++) {
+        const x = Math.sin(time + i) * canvas.width / 2 + canvas.width / 2;
+        const y = Math.cos(time + i) * canvas.height / 2 + canvas.height / 2;
+        const radius = Math.sin(time + i) * 10 + 20;
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fillStyle = `hsl(${(time * 40 + i) % 360}, 70%, 60%)`;
+        ctx.fill();
+      }
+      requestAnimationFrame(animate);
+    }
+
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    animate();
+  </script>
+</body>
+</html>
